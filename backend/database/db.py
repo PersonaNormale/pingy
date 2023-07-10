@@ -1,4 +1,5 @@
 import mariadb
+from dotenv import dotenv_values
 
 class DataBase:
 	# Init dove stabilisce una connessione con il server e crea il database con le tabelle
