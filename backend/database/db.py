@@ -16,15 +16,17 @@ class DataBase:
 			cursor = connection.cursor()
 
 			cursor.execute("""
+		  		--sql
 				CREATE TABLE IF NOT EXISTS urls(
 					id INT NOT NULL AUTO_INCREMENT,
 		  			PRIMARY KEY(id),
 					url VARCHAR(100) NOT NULL,
 		  			timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-				)
+				);
 			""")
 
 			cursor.execute("""
+		  		--sql
 				CREATE TABLE IF NOT EXISTS pings(
 					id INT NOT NULL AUTO_INCREMENT,
 		  			PRIMARY KEY (id),
@@ -32,7 +34,7 @@ class DataBase:
 		  			FOREIGN KEY (url_id) REFERENCES urls(id),
 		  			timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		  			response_time INT
-				)
+				);
 			""")
 
 			connection.commit()
@@ -58,6 +60,8 @@ class DataBase:
 			cursor.execute("INSERT INTO urls (url) VALUES (?)", (url,))
 
 			self.connection.commit()
+
+			cursor.close()
 		except mariadb.Error as e:
 			print(f"An error occured with database: {e}")
 
@@ -77,6 +81,8 @@ class DataBase:
 				""", (url_id, response_time, time))
 
 				self.connection.commit()
+
+				cursor.close()
 		except mariadb.Error as e:
 			print(f"An error occured with database: {e}")
 
@@ -104,7 +110,53 @@ class DataBase:
 				cursor.execute(query, (url_id,))
 
 				self.connection.commit()
+
+				cursor.close()
 		except mariadb.Error as e:
 			print(f"An error occured with database: {e}")
 
+	def fetch_urls(self):
+		try:
+			cursor = self.connection.cursor()
 
+			cursor.execute("SELECT url, timestamp FROM urls;")
+
+			result = cursor.fetchall()
+
+			cursor.close()
+
+			return result
+		except mariadb.Error as e:
+			print(f"An error occured with database: {e}")
+
+	def fetch_url_timestamp(self, url):
+		try:
+			cursor = self.connection.cursor()
+
+			cursor.execute("SELECT timestamp FROM urls WHERE url = ?;", (url,))
+
+			result = cursor.fetchone()
+
+			cursor.close()
+
+			return result[0]
+		except mariadb.Error as e:
+			print(f"An error occured with database: {e}")		
+
+	def fetch_pings(self, url):
+		try:
+			cursor = self.connection.cursor()
+
+			cursor.execute("SELECT id FROM urls WHERE url = ?;", (url,))
+
+			result = cursor.fetchone()
+
+			cursor.execute("SELECT timestamp, response_time FROM pings WHERE url_id = ?;" (url,))
+
+			result = cursor.fetchall()
+
+			cursor.close()
+
+			return result
+		except mariadb.Error as e:
+			print(f"An error occured with database: {e}")	
