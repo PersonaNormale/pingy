@@ -13,11 +13,3 @@ def ping_url(url, timeout=10):
 		return -1
 	
 	return res
-
-# Test cases
-test_cases = [
-    "example1.com",
-    "example2.com",
-    "example3.com",
-    # Add more test cases as needed
-]
