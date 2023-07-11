@@ -1,5 +1,4 @@
 import mariadb
-from dotenv import dotenv_values
 
 class DataBase:
 	# Init dove stabilisce una connessione con il server e crea il database con le tabelle
@@ -16,7 +15,6 @@ class DataBase:
 			cursor = connection.cursor()
 
 			cursor.execute("""
-		  		--sql
 				CREATE TABLE IF NOT EXISTS urls(
 					id INT NOT NULL AUTO_INCREMENT,
 		  			PRIMARY KEY(id),
@@ -26,7 +24,6 @@ class DataBase:
 			""")
 
 			cursor.execute("""
-		  		--sql
 				CREATE TABLE IF NOT EXISTS pings(
 					id INT NOT NULL AUTO_INCREMENT,
 		  			PRIMARY KEY (id),
@@ -38,7 +35,8 @@ class DataBase:
 			""")
 
 			connection.commit()
-			connection.close()
+			self.connection = connection
+			print(self.connection)
 		except mariadb.Error as e:
 			print(f"An error occured with the database: {e}")
 
@@ -76,7 +74,6 @@ class DataBase:
 				url_id = result[0]
 
 				cursor.execute("""
-					--sql
 					INSERT INTO pings (url_id, response_time, timestamp) VALUES (?,?,?);)
 				""", (url_id, response_time, time))
 
@@ -96,15 +93,13 @@ class DataBase:
 			if result is not None:
 				url_id = result[0]
 				query = """
-					--sql
 					DELETE FROM pings WHERE url_id = ?;
 				"""
 				
 				cursor.execute(query, (url_id,))
 
 				query = """
-					--sql
-					DELETE FROM urls WHERE url_id = ?;
+					DELETE FROM urls WHERE id = ?;
 				"""
 
 				cursor.execute(query, (url_id,))
@@ -151,7 +146,7 @@ class DataBase:
 
 			result = cursor.fetchone()
 
-			cursor.execute("SELECT timestamp, response_time FROM pings WHERE url_id = ?;" (url,))
+			cursor.execute("SELECT timestamp, response_time FROM pings WHERE url_id = ?;", (url,))
 
 			result = cursor.fetchall()
 
@@ -159,4 +154,4 @@ class DataBase:
 
 			return result
 		except mariadb.Error as e:
-			print(f"An error occured with database: {e}")	
+			print(f"An error occured with database: {e}")
